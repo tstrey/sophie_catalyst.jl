@@ -2,33 +2,33 @@ using Optimization
 using Zygote
 using DifferentialEquations
 using Catalyst
-using ModelingToolkit
 using SciMLSensitivity
 using Plots
 
+@variables t k_on(t)=10.0
+@species A(t) = 10.0 B(t) = 0.0
+@parameters k_off
 rn = @reaction_network begin
-    (k_on, k_off), A <--> B
+    ($k_on, k_off), A <--> B
 end
-
-@parameters k_on, k_off
 
 eqs = convert(ODESystem, rn)
 tspan = (0.0, 20.0)
 p = [k_on => 10.0, k_off => 10.0]
 
-u0 = [:A => 10.0, :B => 0.0]
-switching = (z == B(t)/u0[:A]) => [k_on ~ 0.0]
+u0 = [A => 10.0, B => 0.0, k_on => 10.0]
+continuous_events = [B/A ~ 0.95] => [k_on ~ 0.0]
 
-osys = ODEProblem(eqs, u0, tspan, p)
+@named rs = ReactionSystem([rn],t; continuous_events)
+oprob = ODEProblem(rs,u0,tspan,p)
+#sample_times = range(tspan[1]; stop = tspan[2], length = 100)
 
-sample_times = range(tspan[1]; stop = tspan[2], length = 100)
-oprob = ODEProblem(osys, u0, t)
-sol = solve(oprob, Tsit5(); tstops = sample_times)
-sample_vals = Array(sol_real(sample_times))
-sample_vals .*= (1 .+ .1 * rand(Float64, size(sample_vals)) .- .05)
+sol = solve(oprob, Tsit5())
+#sample_vals = Array(sol_real(sample_times))
+#sample_vals .*= (1 .+ .1 * rand(Float64, size(sample_vals)) .- .05)
 
 default(; lw = 3, framestyle = :box, size = (800, 400))
-
+plot(sol)
 plot(sol_real; legend = nothing, color = [:darkblue :darkred])
 scatter!(sample_times, sample_vals'; color = [:blue :red], legend = nothing)
 
