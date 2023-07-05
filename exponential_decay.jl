@@ -9,17 +9,7 @@ end
 
 p_real = [:k => 10.]
 
-Pkg.add("OrdinaryDiffEq")
-Pkg.add("Optimization")
-Pkg.add("OptimizationOptimJL")
-Pkg.add("OptimizationOptimisers")
-Pkg.add("Zygote")
-Pkg.add("DifferentialEquations")
-Pkg.add("SciMLSensitivity")
-#Pkg.add("DiffEqFlux")
-#Pkg.add("Flux")
 using OrdinaryDiffEq, Optimization, OptimizationOptimJL, OptimizationOptimisers, Zygote, DifferentialEquations, SciMLSensitivity
-#using DiffEqFlux, Flux
 
 osys = convert(ODESystem, rn)
 
@@ -89,10 +79,12 @@ end
 newprob = remake(prob; tspan = (0., 10.), p = p_estimate)
 sol_estimate = solve(newprob, Rosenbrock23())
 plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.2)
+
 scatter!(sample_times, sample_vals'; color = [:blue :red],
-         label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+    label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-                    label = ["X estimated" "Y estimated"], xlimit = tspan)
+    label = ["X estimated" "Y estimated"], xlimit = tspan)
 
 p_estimate = optimise_p(p_estimate, 20.)
 newprob = remake(prob; tspan = (0., 20.), p = p_estimate)
@@ -111,7 +103,7 @@ plot(sol_real; color = [:blue :red], label = ["a real" "b real"], linealpha = 0.
 scatter!(sample_times, sample_vals'; color = [:blue :red],
         label = ["Samples of a" "Samples of b"], alpha = 0.4)
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-                    label = ["a estimated" "b estimated"], xlimit = tspan)
+    label = ["a estimated" "b estimated"], xlimit = tspan)
 
 p_estimate
 

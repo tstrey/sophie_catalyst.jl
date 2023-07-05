@@ -11,15 +11,7 @@ brusselator = @reaction_network begin
 end
 p_real = [:A => 1., :B => 2.]
 
-Pkg.add("OrdinaryDiffEq")
-Pkg.add("Optimization")
-Pkg.add("OptimizationOptimJL")
-Pkg.add("OptimizationOptimisers")
-Pkg.add("Zygote")
-Pkg.add("DifferentialEquations")
-Pkg.add("SciMLSensitivity")
-#Pkg.add("DiffEqFlux")
-#Pkg.add("Flux")
+
 using OrdinaryDiffEq, Optimization, OptimizationOptimJL, OptimizationOptimisers, Zygote, DifferentialEquations, SciMLSensitivity
 #using DiffEqFlux, Flux
 
@@ -45,7 +37,7 @@ Pkg.add("BenchmarkTools")
 
 using BenchmarkTools
 
-@btime function optimise_p(pinit, tend)
+function optimise_p(pinit, tend)
     function loss(p, _)
         newtimes = filter(<=(tend), sample_times)
         newprob = remake(prob; tspan = (0.0, tend), p = p)
@@ -65,9 +57,9 @@ using BenchmarkTools
     return sol.u
 end
 
-@btime p_estimate = optimise_p([5.0, 5.0], 10.0)
+p_estimate = optimise_p([5.0, 5.0], 10.0)
 
-@btime function optimise_p(pinit, tend)
+function optimise_p(pinit, tend)
     function loss(p, _)
         newtimes = filter(<=(tend), sample_times)
         newprob = remake(prob; tspan = (0.0, tend), p = p)
@@ -87,11 +79,12 @@ end
     return sol.u
 end
 
-@btime p_estimate = optimise_p([5.0, 5.0], 10.0)
+p_estimate = optimise_p([5.0, 5.0], 10.0)
 
 newprob = remake(prob; tspan = (0., 10.), p = p_estimate)
 sol_estimate = solve(newprob, Rosenbrock23())
 plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.2)
+
 scatter!(sample_times, sample_vals'; color = [:blue :red],
          label = ["Samples of X" "Samples of Y"], alpha = 0.4)
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
