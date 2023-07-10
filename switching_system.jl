@@ -5,23 +5,42 @@ using Catalyst
 using SciMLSensitivity
 using Plots
 
-@variables t k_on(t)=10.0
+# try without DSL => rxs = [(@reaction $v, 0 --> A), @reaction 1.0, A --> 0]
+
+# rn = @reaction_network begin
+   # @parameters k_on k_off switch_time 
+   # @variables t
+   # @species A(t) = 10.0 B(t) = 0.0
+   # (k_on, k_off), A <--> B
+# end
+
+@parameters k_on k_off switch_time 
+
+@variables t
 @species A(t) = 10.0 B(t) = 0.0
-@parameters k_off
 
-#try without DSL => rxs = [(@reaction $v, 0 --> A), @reaction 1.0, A --> 0]
-rn = @reaction_network begin
-    ($k_on, k_off), A <--> B
-end
+rxs = [(@reaction k_on, A --> B), (@reaction k_off, B --> A)]
+#eqs = convert(ODESystem, rxs)
 
-eqs = convert(ODESystem, rn)
-tspan = (0.0, 20.0)
-p = [k_on => 10.0, k_off => 10.0]
+discrete_events = [t == switch_time] => [k_on ~ 0.0]
+tspan = (0.0, 10.0)
+@named rs = ReactionSystem([rxs], t; discrete_events)
+osys = convert(ODESystem, rs)
+oprob = ODEProblem(osys, [], (0.0, 10.0))
 
-u0 = [A => 10.0, B => 0.0, k_on => 10.0]
-discrete_events = [B/A ~ 0.95] => [k_on ~ 0.0]
+sol = solve(oprob, Tsit5())
 
-@named rs = ReactionSystem([rn],t; discrete_events)
+plot(sol; plotdensity = 1000)
+
+#tspan = (0.0, 20.0)
+
+#discrete_events = [t == switch_time] => [k_on ~ 0.0]
+
+#u0 = [A => 10.0, B => 0.0]
+discrete_events = [t == switch_time] => [k_on ~ 0.0]
+p = [k_on => 10.0, switch_time => 5.0, k_off => 10.0]
+
+@named rs = ReactionSystem([rn],t; discrete_events) #pass in species and parameters
 osys = convert(ODESystem, rs)
 oprob = ODEProblem(rn, u0, tspan, p)
 
