@@ -18,4 +18,5 @@ p = [α => 100.0, tinject => 10.0, M => 50]
 @named osys = ODESystem(eqs, t, [N], [α, M, tinject]; discrete_events = injection)
 oprob = ODEProblem(osys, u0, tspan, p)
 sol = solve(oprob, Tsit5(); tstops = 10.0)
+
 plot(sol)

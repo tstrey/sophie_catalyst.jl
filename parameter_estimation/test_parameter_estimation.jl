@@ -88,7 +88,7 @@ plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.
 scatter!(sample_times, sample_vals'; color = [:blue :red],
          label = ["Samples of X" "Samples of Y"], alpha = 0.4)
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-                    label = ["X estimated" "Y estimated"], xlimit = tspan)
+    label = ["X estimated" "Y estimated"], xlimit = tspan)
 
 p_estimate = optimise_p(p_estimate, 20.)
 newprob = remake(prob; tspan = (0., 20.), p = p_estimate)

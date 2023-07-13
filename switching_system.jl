@@ -1,42 +1,30 @@
-using Optimization
-using Zygote
+#using Optimization
+#using Zygote
 using DifferentialEquations
 using Catalyst
-using SciMLSensitivity
+#using SciMLSensitivity
 using Plots
 
-# try without DSL => rxs = [(@reaction $v, 0 --> A), @reaction 1.0, A --> 0]
-
-# rn = @reaction_network begin
-   # @parameters k_on k_off switch_time 
-   # @variables t
-   # @species A(t) = 10.0 B(t) = 0.0
-   # (k_on, k_off), A <--> B
-# end
-
 @parameters k_on k_off switch_time 
-
 @variables t
-@species A(t) = 10.0 B(t) = 0.0
+#@species A(t) = 10.0 B(t) = 0.0
+    D = Differential(t)
+    eq1 = [D(A) ~ k_off * B - k_on * A]
+    eq2 = [D(B) ~ k_on * A - k_off * B]
+    #rxs = [(@reaction k_on, A --> B), (@reaction k_off, B --> A)]
+    
+    discrete_events = [t == switch_time] => [k_on ~ 0.0]
+    
+    u0 = [A => 10.0, B => 0.0]
+    tspan = (0.0, 10.0)
+    p = [k_on => 10.0, k_off => 10.0, switch_time => 2.0]
+    @named rs = ReactionSystem([eq1, eq2], t, [A, B], [k_on, switch_time, k_off]; discrete_events)
+    #osys = convert(ODESystem, rs)
+    oprob = ODEProblem(rs, u0, tspan, p)
+sol = solve(oprob, Tsit5(); tstops = 10.0)
 
-rxs = [(@reaction k_on, A --> B), (@reaction k_off, B --> A)]
-#eqs = convert(ODESystem, rxs)
+plot(sol)
 
-discrete_events = [t == switch_time] => [k_on ~ 0.0]
-tspan = (0.0, 10.0)
-@named rs = ReactionSystem([rxs], t; discrete_events)
-osys = convert(ODESystem, rs)
-oprob = ODEProblem(osys, [], (0.0, 10.0))
-
-sol = solve(oprob, Tsit5())
-
-plot(sol; plotdensity = 1000)
-
-#tspan = (0.0, 20.0)
-
-#discrete_events = [t == switch_time] => [k_on ~ 0.0]
-
-#u0 = [A => 10.0, B => 0.0]
 discrete_events = [t == switch_time] => [k_on ~ 0.0]
 p = [k_on => 10.0, switch_time => 5.0, k_off => 10.0]
 
