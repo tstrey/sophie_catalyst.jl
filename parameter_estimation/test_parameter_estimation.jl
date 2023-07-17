@@ -13,8 +13,6 @@ p_real = [:A => 1., :B => 2.]
 
 
 using OrdinaryDiffEq, Optimization, OptimizationOptimJL, OptimizationOptimisers, Zygote, DifferentialEquations, SciMLSensitivity
-#using DiffEqFlux, Flux
-
 
 osys = convert(ODESystem, brusselator)
 
@@ -69,7 +67,7 @@ function optimise_p(pinit, tend)
     end
 
     # optimize for the parameters that minimize the loss
-    optf = OptimizationFunction(loss, Optimization.AutoForwardDiff()) 
+    optf = OptimizationFunction(loss, Optimization.AutoZygote()) 
     
     # changed from AutoZygote() to AutoForwardDiff()
     optprob = OptimizationProblem(optf, pinit)
@@ -86,28 +84,32 @@ sol_estimate = solve(newprob, Rosenbrock23())
 plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.2)
 
 scatter!(sample_times, sample_vals'; color = [:blue :red],
-         label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-    label = ["X estimated" "Y estimated"], xlimit = tspan)
+label = ["X estimated" "Y estimated"], xlimit = tspan)
 
 p_estimate = optimise_p(p_estimate, 20.)
 newprob = remake(prob; tspan = (0., 20.), p = p_estimate)
 sol_estimate = solve(newprob, Rosenbrock23())
 plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.2)
 scatter!(sample_times, sample_vals'; color = [:blue :red],
-         label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-                    label = ["X estimated" "Y estimated"], xlimit = tspan)
+label = ["X estimated" "Y estimated"], xlimit = tspan)
 
 p_estimate = optimise_p(p_estimate, 30.0)
 
 newprob = remake(prob; tspan = (0., 30.0), p = p_estimate)
 sol_estimate = solve(newprob, Rosenbrock23())
+
 plot(sol_real; color = [:blue :red], label = ["X real" "Y real"], linealpha = 0.2)
 scatter!(sample_times, sample_vals'; color = [:blue :red],
-        label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+label = ["Samples of X" "Samples of Y"], alpha = 0.4)
+
 plot!(sol_estimate; color = [:darkblue :darkred], linestyle = :dash,
-                    label = ["X estimated" "Y estimated"], xlimit = tspan)
+label = ["X estimated" "Y estimated"], xlimit = tspan)
 
 p_estimate
 
