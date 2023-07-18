@@ -51,9 +51,9 @@ function optimise_p(pinit, tend)
     return sol.u
 end
 
-p_estimate = optimise_p([100.0, 10.0], 5.0)
+p_estimate = optimise_p([100.0, 10.0], 1.5)
 
-newprob = remake(oprob; tspan = (0.0, 5.0), p = p_estimate)
+newprob = remake(oprob; tspan = (0.0, 4.0), p = p_estimate)
 newsol = solve(newprob, Tsit5(); tstops = switch_time)
 
 plot(sol_real; legend = nothing, color = [:darkblue :darkred])
