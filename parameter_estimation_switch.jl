@@ -7,7 +7,6 @@ using Zygote
 using SciMLSensitivity
 using OptimizationOptimisers
 using OptimizationOptimJL
-using Optim
 
 switch_time = 2.0 
 
@@ -42,10 +41,9 @@ function optimise_p(pinit, tend)
         return loss, sol
     end
 
-    optf = OptimizationFunction(loss) #not necessary for gradient free optimizatoin
+    optf = OptimizationFunction(loss)
     
     optprob = OptimizationProblem(optf, pinit)
-    #sol = solve(optprob, Optim.NelderMead(0.1); maxiters = 100) # instead of Adam use neldermead
     sol = solve(optprob, Optim.NelderMead())
 
     return sol.u
