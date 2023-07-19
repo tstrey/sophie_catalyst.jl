@@ -3,9 +3,9 @@ using Catalyst
 using DifferentialEquations
 using Plots
 using Optimization
-using Zygote
+#using Zygote
 using SciMLSensitivity
-using OptimizationOptimisers
+#using OptimizationOptimisers
 using OptimizationOptimJL
 
 switch_time = 2.0 
@@ -57,4 +57,4 @@ newsol = solve(newprob, Tsit5(); tstops = switch_time)
 plot(sol_real; legend = nothing, color = [:darkblue :darkred])
 scatter!(sample_times, sample_vals'; color = [:blue :red], legend = nothing)
 
-plot!(newsol; legend = nothing, color = [:darkblue :darkred])
+plot!(newsol; legend = nothing, color = [:darkblue :darkred], linestyle = :dash)
