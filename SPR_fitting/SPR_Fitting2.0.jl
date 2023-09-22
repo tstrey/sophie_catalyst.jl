@@ -17,7 +17,7 @@ discrete_events = (t == switch_time) => [k_on ~ 0.0]
 
 tspan = (0.0, 4.0)
 
-alpha_list = [0.1,0.2,0.3,0.4]
+alpha_list = [0.1,0.2,0.3,0.4] #permittivity
 results_list = []
 
 u0 = [:A => 10.0, :B => 0.0]
