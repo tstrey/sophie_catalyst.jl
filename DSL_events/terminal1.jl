@@ -81,11 +81,11 @@ julia> switch_time = 2.0
 2.0
 
 julia> @variables t
-1-element Vector{Num}:
+#1-element Vector{Num}:
  t
 
 julia> @parameters k_on k_off α
-3-element Vector{Num}:
+#3-element Vector{Num}:
  k_on
   k_off
     α
@@ -106,7 +106,7 @@ julia> discrete_events = (t == switch_time) => [k_on ~ 0.0]
 t == 2.0 => Equation[k_on ~ 0.0]
 
 julia> u0 = [:A => 10.0, :B => 0.0]
-2-element Vector{Pair{Symbol, Float64}}:
+#2-element Vector{Pair{Symbol, Float64}}:
  :A => 10.0
  :B => 0.0
 
@@ -114,12 +114,12 @@ julia> tspan = (0.0, 4.0)
 (0.0, 4.0)
 
 julia> p_real = [k_on => 100.0, k_off => 10.0]
-2-element Vector{Pair{Num, Float64}}:
+#2-element Vector{Pair{Num, Float64}}:
   k_on => 100.0
  k_off => 10.0
 
 julia> @named osys = ReactionSystem(rxs, t, [A, B], [k_on, k_off]; discrete_events)
-Model osys
+#Model osys
 States (2):
   A(t)
   B(t)
