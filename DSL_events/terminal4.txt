@@ -1,0 +1,310 @@
+[ Info: Precompiling VSCodeServer [9f5989ce-84fe-42d4-91ec-6a7a8d53ed0f]
+julia> using Catalyst
+[ Info: Precompiling Catalyst [479239e8-5488-4da2-87a7-35f2df7eef83]
+
+julia> ex = 
+       :a == 0 => [a ~ a+1, b ~ b-1]
+       :b == 1 => [a ~ a-1, b ~ b+1]
+ERROR: UndefVarError: a not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[2]:1
+
+julia> ex = quote
+       @discrete_events begin
+               a == 0 => [a ~ a+1, b ~ b-1]
+               b == 1 => [a ~ a-1, b ~ b+1]
+           end
+           end
+quote
+    #= REPL[3]:2 =#
+    #= REPL[3]:2 =# @discrete_events begin
+            #= REPL[3]:3 =#
+            a == 0 => [a ~ a + 1, b ~ b - 1]
+            #= REPL[3]:4 =#
+            b == 1 => [a ~ a - 1, b ~ b + 1]
+        end
+end
+
+julia> using MacroTools
+
+julia> ex1 = MacroTools.striplines(ex)
+quote
+    @discrete_events begin
+            a == 0 => [a ~ a + 1, b ~ b - 1]
+            b == 1 => [a ~ a - 1, b ~ b + 1]
+        end
+end
+
+julia> ex2 = (ex1.args[1].args[end].args)
+2-element Vector{Any}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> [ex2...]
+2-element Vector{Expr}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> $[ex2...]
+ERROR: syntax: "$" expression outside quote around REPL[8]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[8]:1
+
+julia> Symbol[ex2...]
+ERROR: MethodError: Cannot `convert` an object of type Expr to an object of type Symbol
+Closest candidates are:
+  convert(::Type{T}, ::T) where T at Base.jl:61
+  Symbol(::Any...) at strings/basic.jl:229
+Stacktrace:
+ [1] setindex!(A::Vector{Symbol}, x::Expr, i1::Int64)
+   @ Base ./array.jl:966
+ [2] getindex(::Type{Symbol}, ::Expr, ::Expr)
+   @ Base ./array.jl:407
+ [3] top-level scope
+   @ REPL[9]:1
+
+julia> [:ex2...]
+ERROR: MethodError: no method matching iterate(::Symbol)
+Closest candidates are:
+  iterate(::Union{LinRange, StepRangeLen}) at range.jl:872
+  iterate(::Union{LinRange, StepRangeLen}, ::Integer) at range.jl:872
+  iterate(::T) where T<:Union{Base.KeySet{<:Any, <:Dict}, Base.ValueIterator{<:Dict}} at dict.jl:712
+  ...
+Stacktrace:
+ [1] top-level scope
+   @ REPL[10]:1
+
+julia> [:[ex2]...]
+ERROR: MethodError: no method matching iterate(::Expr)
+Closest candidates are:
+  iterate(::Union{LinRange, StepRangeLen}) at range.jl:872
+  iterate(::Union{LinRange, StepRangeLen}, ::Integer) at range.jl:872
+  iterate(::T) where T<:Union{Base.KeySet{<:Any, <:Dict}, Base.ValueIterator{<:Dict}} at dict.jl:712
+  ...
+Stacktrace:
+ [1] top-level scope
+   @ REPL[11]:1
+
+julia> [:(ex2)...]
+ERROR: MethodError: no method matching iterate(::Symbol)
+Closest candidates are:
+  iterate(::Union{LinRange, StepRangeLen}) at range.jl:872
+  iterate(::Union{LinRange, StepRangeLen}, ::Integer) at range.jl:872
+  iterate(::T) where T<:Union{Base.KeySet{<:Any, <:Dict}, Base.ValueIterator{<:Dict}} at dict.jl:712
+  ...
+Stacktrace:
+ [1] top-level scope
+   @ REPL[12]:1
+
+julia> [: ex2...]
+ERROR: syntax: whitespace not allowed after ":" used for quoting
+Stacktrace:
+ [1] top-level scope
+   @ none:1
+
+julia> [; ex2...]
+ERROR: syntax: unexpected "ex2" inside [;] expression
+Stacktrace:
+ [1] top-level scope
+   @ none:1
+
+julia> :[ex2...]
+:([ex2...])
+
+julia> [$ex2...]
+ERROR: syntax: "$" expression outside quote around REPL[16]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[16]:1
+
+julia> [$(ex2)...]
+ERROR: syntax: "$" expression outside quote around REPL[17]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[17]:1
+
+julia> :[ex2...]
+:([ex2...])
+
+julia> :[ex2...]
+:([ex2...])
+
+julia> :[ex2...]
+:([ex2...])
+
+julia> Symbol(:a == 0 => [a ~ a+1, b ~ b-1])
+ERROR: UndefVarError: a not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[19]:1
+
+julia> $(:a == 0 => [a ~ a+1, b ~ b-1])
+ERROR: syntax: "$" expression outside quote around REPL[20]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[20]:1
+
+julia> :(:a == 0 => [a ~ a+1, b ~ b-1])
+:(:a == 0 => [a ~ a + 1, b ~ b - 1])
+
+julia> quote 
+       $(:a == 0 => [a ~ a+1, b ~ b-1])
+       end
+ERROR: UndefVarError: a not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[22]:1
+
+julia> parse[ex2...]
+ERROR: MethodError: no method matching getindex(::typeof(parse), ::Expr, ::Expr)
+Stacktrace:
+ [1] top-level scope
+   @ REPL[23]:1
+
+julia> :($(ex...))
+ERROR: syntax: "..." expression outside call around REPL[24]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[24]:1
+
+julia> :($(ex2...))
+ERROR: syntax: "..." expression outside call around REPL[25]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[25]:1
+
+julia> :[ex2...]
+:([ex2...])
+
+julia> [:ex2...]
+ERROR: MethodError: no method matching iterate(::Symbol)
+Closest candidates are:
+  iterate(::Union{LinRange, StepRangeLen}) at range.jl:872
+  iterate(::Union{LinRange, StepRangeLen}, ::Integer) at range.jl:872
+  iterate(::T) where T<:Union{Base.KeySet{<:Any, <:Dict}, Base.ValueIterator{<:Dict}} at dict.jl:712
+  ...
+Stacktrace:
+ [1] top-level scope
+   @ REPL[27]:1
+
+julia> [ex2...]
+2-element Vector{Expr}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> :(ex2...)
+:(ex2...)
+
+julia> ex2
+2-element Vector{Any}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> $(ex2[]...)
+ERROR: syntax: "$" expression outside quote around REPL[31]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[31]:1
+
+julia> :($[ex2...])
+2-element Vector{Expr}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> quote
+       :($[ex2...])
+       end
+quote
+    #= REPL[33]:2 =#
+    $(Expr(:quote, :($(Expr(:$, :([ex2...]))))))
+end
+
+julia> Symbolics.wrap[ex2...]
+ERROR: MethodError: no method matching getindex(::typeof(Symbolics.wrap), ::Expr, ::Expr)
+Stacktrace:
+ [1] top-level scope
+   @ REPL[34]:1
+
+julia> splat()
+ERROR: UndefVarError: splat not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[35]:1
+
+julia> splat
+ERROR: UndefVarError: splat not defined
+
+julia> typeof(ex2)
+Vector{Any} (alias for Array{Any, 1})
+
+julia> eqs = [event for event in ex2]
+2-element Vector{Expr}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> ex2
+2-element Vector{Any}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> :($(exprs...);)
+ERROR: UndefVarError: exprs not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[40]:1
+
+julia> :($(ex2...);)
+quote
+    a == 0 => [a ~ a + 1, b ~ b - 1]
+    b == 1 => [a ~ a - 1, b ~ b + 1]
+end
+
+julia> n = :($(ex2...);)
+quote
+    a == 0 => [a ~ a + 1, b ~ b - 1]
+    b == 1 => [a ~ a - 1, b ~ b + 1]
+end
+
+julia> (n.args[1].args[end].args)
+2-element Vector{Any}:
+ :(a ~ a + 1)
+ :(b ~ b - 1)
+
+julia> n
+quote
+    a == 0 => [a ~ a + 1, b ~ b - 1]
+    b == 1 => [a ~ a - 1, b ~ b + 1]
+end
+
+julia> n.args
+2-element Vector{Any}:
+ :(a == 0 => [a ~ a + 1, b ~ b - 1])
+ :(b == 1 => [a ~ a - 1, b ~ b + 1])
+
+julia> n.args[1]
+:(a == 0 => [a ~ a + 1, b ~ b - 1])
+
+julia> n
+quote
+    a == 0 => [a ~ a + 1, b ~ b - 1]
+    b == 1 => [a ~ a - 1, b ~ b + 1]
+end
+
+julia> :[$(ex2...)]
+:([a == 0 => [a ~ a + 1, b ~ b - 1], b == 1 => [a ~ a - 1, b ~ b + 1]])
+
+julia> typeof(n)
+Expr
+
+julia> n
+quote
+    a == 0 => [a ~ a + 1, b ~ b - 1]
+    b == 1 => [a ~ a - 1, b ~ b + 1]
+end
+
+julia> typeof(n)
+Expr
+
+julia> 

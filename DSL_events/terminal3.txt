@@ -1,0 +1,167 @@
+julia> using Catalys
+ERROR: ArgumentError: Package Catalys not found in current path.
+- Run `import Pkg; Pkg.add("Catalys")` to install the Catalys package.
+Stacktrace:
+  [1] macro expansion
+    @ ./loading.jl:1163 [inlined]
+  [2] macro expansion
+    @ ./lock.jl:223 [inlined]
+  [3] require(into::Module, mod::Symbol)
+    @ Base ./loading.jl:1144
+  [4] eval
+    @ ./boot.jl:368 [inlined]
+  [5] eval
+    @ ./Base.jl:65 [inlined]
+  [6] repleval(m::Module, code::Expr, #unused#::String)
+    @ VSCodeServer ~/.vscode/extensions/julialang.language-julia-1.56.2/scripts/packages/VSCodeServer/src/repl.jl:229
+  [7] (::VSCodeServer.var"#110#112"{Module, Expr, REPL.LineEditREPL, REPL.LineEdit.Prompt})()
+    @ VSCodeServer ~/.vscode/extensions/julialang.language-julia-1.56.2/scripts/packages/VSCodeServer/src/repl.jl:192
+  [8] with_logstate(f::Function, logstate::Any)
+    @ Base.CoreLogging ./logging.jl:511
+  [9] with_logger
+    @ ./logging.jl:623 [inlined]
+ [10] (::VSCodeServer.var"#109#111"{Module, Expr, REPL.LineEditREPL, REPL.LineEdit.Prompt})()
+    @ VSCodeServer ~/.vscode/extensions/julialang.language-julia-1.56.2/scripts/packages/VSCodeServer/src/repl.jl:193
+ [11] #invokelatest#2
+    @ ./essentials.jl:729 [inlined]
+ [12] invokelatest(::Any)
+    @ Base ./essentials.jl:726
+ [13] macro expansion
+    @ ~/.vscode/extensions/julialang.language-julia-1.56.2/scripts/packages/VSCodeServer/src/eval.jl:34 [inlined]
+ [14] (::VSCodeServer.var"#62#63")()
+    @ VSCodeServer ./task.jl:484
+
+julia> using Catalyst
+
+julia> rn = @reaction_network a begin
+           @parameters k
+           @variables V(t)
+           @species B(t) C(t)
+           @discrete_events begin
+               a == 0 => [a ~ a+1, b ~ b-1]
+               b == 1 => [a ~ a-1, b ~ b+1]
+           end
+           k, C --> B
+       end
+option_lines = Expr[:(@parameters k), :(@variables V(t)), :(@species B(t) C(t)), :(@discrete_events begin
+          a == 0 => [a ~ a + 1, b ~ b - 1]
+          b == 1 => [a ~ a - 1, b ~ b + 1]
+      end)]
+options = Dict{Symbol, Expr}(:species => :(@species B(t) C(t)), :variables => :(@variables V(t)), :discrete_events => :(@discrete_events begin
+          a == 0 => [a ~ a + 1, b ~ b - 1]
+          b == 1 => [a ~ a - 1, b ~ b + 1]
+      end), :parameters => :(@parameters k))
+Model a
+States (3):
+  WARNING: both Symbolics and ModelingToolkit export "infimum"; uses of it in module Catalyst must be qualified
+WARNING: both Symbolics and ModelingToolkit export "supremum"; uses of it in module Catalyst must be qualified
+B(t)
+  C(t)
+  V(t)
+Parameters (1):
+  k
+
+julia> ModelingToolkit.discrete_events(rn)
+1-element Vector{ModelingToolkit.SymbolicDiscreteCallback}:
+ condition: Expr[:(a == 0 => [a ~ a + 1, b ~ b - 1]), :(b == 1 => [a ~ a - 1, b ~ b + 1])]
+affects:
+
+
+julia> :(a == 0 => [a ~ a + 1, b ~ b - 1])
+:(a == 0 => [a ~ a + 1, b ~ b - 1])
+
+julia> equation(:(a == 0 => [a ~ a + 1, b ~ b - 1]))
+ERROR: UndefVarError: equation not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[6]:1
+
+julia> Equation(:(a == 0 => [a ~ a + 1, b ~ b - 1]))
+ERROR: MethodError: no method matching Equation(::Expr)
+Closest candidates are:
+  Equation(::Any, ::Any) at ~/.julia/packages/Symbolics/gBKZv/src/equations.jl:38
+Stacktrace:
+ [1] top-level scope
+   @ REPL[7]:1
+
+julia> (a == 0 => [a ~ a + 1, b ~ b - 1])
+ERROR: UndefVarError: a not defined
+Stacktrace:
+ [1] top-level scope
+   @ REPL[8]:1
+
+julia> @variables a b
+2-element Vector{Num}:
+ a
+ b
+
+julia> (a == 0 => [a ~ a + 1, b ~ b - 1])
+a == 0 => Equation[a ~ 1 + a, b ~ -1 + b]
+
+julia> Equation(:(a == 0 => [a ~ a + 1, b ~ b - 1]))
+ERROR: MethodError: no method matching Equation(::Expr)
+Closest candidates are:
+  Equation(::Any, ::Any) at ~/.julia/packages/Symbolics/gBKZv/src/equations.jl:38
+Stacktrace:
+ [1] top-level scope
+   @ REPL[11]:1
+
+julia> c = :(a == 0 => [a ~ a + 1, b ~ b - 1])
+:(a == 0 => [a ~ a + 1, b ~ b - 1])
+
+julia> quote
+       lala $c
+       end
+quote
+    #= REPL[13]:2 =#
+    lala $ c
+end
+
+julia> $c
+ERROR: syntax: "$" expression outside quote around REPL[14]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[14]:1
+
+julia> Equation($c)
+ERROR: syntax: "$" expression outside quote around REPL[15]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[15]:1
+
+julia> Equation($(c))
+ERROR: syntax: "$" expression outside quote around REPL[16]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[16]:1
+
+julia> $(c)
+ERROR: syntax: "$" expression outside quote around REPL[17]:1
+Stacktrace:
+ [1] top-level scope
+   @ REPL[17]:1
+
+julia> esc(:($c))
+:($(Expr(:escape, :(a == 0 => [a ~ a + 1, b ~ b - 1]))))
+
+julia> f(x) = x^2
+f (generic function with 1 method)
+
+julia> n = [ 1,2,3,4]
+4-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 4
+
+julia> f.(n)
+4-element Vector{Int64}:
+  1
+  4
+  9
+ 16
+
+julia> typeof((a == 0 => [a ~ a + 1, b ~ b - 1]))
+Pair{Num, Vector{Equation}}
+
+julia> 

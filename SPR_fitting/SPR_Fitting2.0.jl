@@ -4,7 +4,6 @@ using DifferentialEquations
 using Plots
 using Optimization
 using OptimizationOptimJL
-using Optim
 
 @variables t 
 @parameters k_on k_off α
